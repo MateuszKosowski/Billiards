@@ -6,7 +6,7 @@ using System.Threading;
 namespace Test
 {
     [TestClass]
-    public sealed class Test1
+    public sealed class TestLogicAndData
     {
         [TestMethod]
         public void BallTest()
@@ -69,6 +69,33 @@ namespace Test
 
             Assert.IsTrue(ball1.VelocityX > 0 && ball1.VelocityY > 0);
 
+        }
+
+        [TestMethod]
+        public void IsAnotherBallCollidingTest()
+        {
+            PoolTable poolTable = new PoolTable(10, 10);
+            PoolProcessor poolProcessor = new PoolProcessor(poolTable);
+            Ball ball1 = new Ball(1, "pink", 9, 2, 2, 10, 0);
+            Ball ball2 = new Ball(1, "pruple", 9, 5, 2, 0, 0);
+            poolProcessor.AddBall(ball1);
+            poolProcessor.AddBall(ball2);
+
+            bool collisionDetected = false;
+
+            for (int i = 0; i < 15; i++)
+            {
+                poolProcessor.Update(null, null);
+                Thread.Sleep(10);
+
+                if (poolProcessor.IsAnotherBallColliding(ball1))
+                {
+                    collisionDetected = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(collisionDetected);
         }
 
     }

@@ -44,7 +44,8 @@ namespace Logic
             {
                 ball.PositionX += ball.VelocityX * timeDelta;
                 ball.PositionY += ball.VelocityY * timeDelta;
-                isWallHit(ball);
+                HandleWallCollision(ball);
+                IsAnotherBallColliding(ball);
             }
 
 
@@ -56,19 +57,58 @@ namespace Logic
         }
 
         // Funkcja sprawdzająca czy kula uderzyła w ścianę
-        public void isWallHit(Ball ball)
+        public void HandleWallCollision(Ball ball)
         {
-
-            if (ball.PositionX + ball.Radius >= _poolTable.Width || ball.PositionX - ball.Radius <= 0)
+            // Zderzenia na X
+            if (ball.PositionX + ball.Radius >= _poolTable.Width)
             {
                 ball.VelocityX = -ball.VelocityX;
-                Console.WriteLine($"Kula {ball.Color} odbiła się od ściany na X");
+                ball.PositionX = _poolTable.Width - ball.Radius - 0.01;
+                Console.WriteLine($"Kula {ball.Color} odbiła się od prawej ściany");
             }
-            if (ball.PositionY + ball.Radius >= _poolTable.Height || ball.PositionY - ball.Radius <= 0)
+            else if (ball.PositionX - ball.Radius <= 0)
+            {
+                ball.VelocityX = -ball.VelocityX;
+                ball.PositionX = ball.Radius + 0.01;
+                Console.WriteLine($"Kula {ball.Color} odbiła się od lewej ściany");
+            }
+
+            // Zderzenia na Y
+            if (ball.PositionY + ball.Radius >= _poolTable.Height)
             {
                 ball.VelocityY = -ball.VelocityY;
-                Console.WriteLine($"Kula {ball.Color} odbiła się od ściany na Y");
+                ball.PositionY = _poolTable.Height - ball.Radius - 0.01;
+                Console.WriteLine($"Kula {ball.Color} odbiła się od dolnej ściany");
             }
+            else if(ball.PositionY - ball.Radius <= 0)
+            {
+                ball.VelocityY = -ball.VelocityY;
+                ball.PositionY = ball.Radius + 0.01;
+                Console.WriteLine($"Kula {ball.Color} odbiła się od górnej ściany");
+            }
+        }
+
+        public bool IsAnotherBallColliding(Ball ball)
+        {
+            foreach (Ball otherBall in _poolTable.Balls)
+            {
+                // Nie prowadź testu kolizji z samą sobą
+                if (otherBall == ball) continue;
+
+                // obliczenie odległości między kulami
+                double dx = ball.PositionX - otherBall.PositionX;
+                double dy = ball.PositionY - otherBall.PositionY;
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+
+                // jeśli dystans jest mniejszy niż suma promieni kul, to znaczy, że kule się zderzają
+                if (distance < (ball.Radius + otherBall.Radius))
+                {
+                    Console.WriteLine($"Kula {ball.Color} zderzyła się z kulą {otherBall.Color}");
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         static void Main(string[] args)
