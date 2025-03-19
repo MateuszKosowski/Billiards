@@ -16,6 +16,7 @@ namespace Data
         {
             _width = width;
             _height = height;
+            _balls = new List<Ball>();
         }
 
         public List<Ball> Balls

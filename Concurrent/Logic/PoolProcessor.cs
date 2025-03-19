@@ -1,6 +1,7 @@
 ﻿using Data;
 using System.Diagnostics;
 using System.Timers;
+using System;
 
 namespace Logic
 {
@@ -26,9 +27,11 @@ namespace Logic
         public void Start()
         {
             timer.Start();
+            stopwatch.Start();
+     
         }
 
-        public void Update(object sender, ElapsedEventArgs e)
+        public void Update(object? sender, ElapsedEventArgs e)
         {
             double timeDelta = stopwatch.Elapsed.TotalSeconds;
             stopwatch.Restart();
@@ -41,7 +44,7 @@ namespace Logic
 
             foreach (var ball in _poolTable.Balls)
             {
-                Console.WriteLine($"Kula w pozycji ({ball.PositionX:F2}, {ball.PositionY:F2})");
+                Console.WriteLine($"Kula {ball.Color} w pozycji ({ball.PositionX:F2}, {ball.PositionY:F2})");
             }
         }
 
@@ -50,14 +53,12 @@ namespace Logic
             PoolProcessor proc = new PoolProcessor(new PoolTable(100, 100));
 
             // Dodaj dwie kule z różnymi prędkościami
-            proc.AddBall(new Ball(1, "red", 2, 0, 0, 1.5f, 2));
-            proc.AddBall(new Ball { PositionX = 10, PositionY = 10, VelocityX = -1, VelocityY = -0.5 });
+            proc.AddBall(new Ball(1, "red", 2, 1, 1, 1, 1));
+            proc.AddBall(new Ball (1, "blue", 5, 3, 3, 2, 2));
 
             // Uruchom symulację
             proc.Start();
 
-            // Utrzymaj program aktywny, aby zobaczyć wyniki
-            Console.ReadLine();
         }
     }
 }
