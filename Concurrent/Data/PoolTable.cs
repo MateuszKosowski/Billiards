@@ -19,6 +19,16 @@ namespace Data
             _balls = new List<Ball>();
         }
 
+        public float Width
+        {
+            get { return _width; }
+        }
+
+        public float Height
+        {
+            get { return _height; }
+        }
+
         public List<Ball> Balls
         {
             get { return _balls; }

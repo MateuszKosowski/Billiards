@@ -11,6 +11,7 @@ namespace Logic
         private Stopwatch stopwatch = new Stopwatch();
         private readonly System.Timers.Timer timer;
 
+        // Konstruktor
         public PoolProcessor(Data.PoolTable poolTable)
         {
             _poolTable = poolTable;
@@ -19,11 +20,13 @@ namespace Logic
             timer.AutoReset = true;
         }
 
+        // Dodanie kuli do stołu
         public void AddBall(Ball ball)
         {
             _poolTable.Balls.Add(ball);
         }
 
+        // Rozpoczęcie symulacji
         public void Start()
         {
             timer.Start();
@@ -31,6 +34,7 @@ namespace Logic
      
         }
 
+        // Funkcja aktualizująca pozycje kul co 10ms
         public void Update(object? sender, ElapsedEventArgs e)
         {
             double timeDelta = stopwatch.Elapsed.TotalSeconds;
@@ -40,11 +44,30 @@ namespace Logic
             {
                 ball.PositionX += ball.VelocityX * timeDelta;
                 ball.PositionY += ball.VelocityY * timeDelta;
+                isWallHit(ball);
             }
 
+
+            // Roboczo do wyświetlenia pozycji kul
             foreach (var ball in _poolTable.Balls)
             {
                 Console.WriteLine($"Kula {ball.Color} w pozycji ({ball.PositionX:F2}, {ball.PositionY:F2})");
+            }
+        }
+
+        // Funkcja sprawdzająca czy kula uderzyła w ścianę
+        public void isWallHit(Ball ball)
+        {
+
+            if (ball.PositionX + ball.Radius >= _poolTable.Width || ball.PositionX - ball.Radius <= 0)
+            {
+                ball.VelocityX = -ball.VelocityX;
+                Console.WriteLine($"Kula {ball.Color} odbiła się od ściany na X");
+            }
+            if (ball.PositionY + ball.Radius >= _poolTable.Height || ball.PositionY - ball.Radius <= 0)
+            {
+                ball.VelocityY = -ball.VelocityY;
+                Console.WriteLine($"Kula {ball.Color} odbiła się od ściany na Y");
             }
         }
 
