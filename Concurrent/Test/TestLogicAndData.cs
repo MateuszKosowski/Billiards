@@ -83,20 +83,56 @@ namespace Test
 
             bool collisionDetected = false;
 
-            for (int i = 0; i < 15; i++)
+            poolProcessor.BallCollision += (sender, args) =>
             {
-                poolProcessor.Update(null, null);
-                Thread.Sleep(10);
+                collisionDetected = true;
+            };
 
-                if (poolProcessor.IsAnotherBallColliding(ball1))
-                {
-                    collisionDetected = true;
-                    break;
-                }
+            var maxWaitTime = TimeSpan.FromSeconds(3);
+            var timeout = new CancellationTokenSource(maxWaitTime);
+
+            poolProcessor.Start();
+
+            while (!timeout.Token.IsCancellationRequested && !collisionDetected)
+            {
+                Thread.Sleep(10);
             }
 
-            Assert.IsTrue(collisionDetected);
+            poolProcessor.Stop();
+
+            Assert.IsTrue(collisionDetected, $"Kule powinny zderzyć się w ciągu {maxWaitTime.TotalSeconds} sekund");
         }
 
+        [TestMethod]
+        public void IsAnotherBallCollidingTestFail()
+        {
+            PoolTable poolTable = new PoolTable(10, 10);
+            PoolProcessor poolProcessor = new PoolProcessor(poolTable);
+            Ball ball1 = new Ball(1, "pink", 9, 2, 2, 0.05, 0);
+            Ball ball2 = new Ball(1, "pruple", 9, 5, 2, 0, 0);
+            poolProcessor.AddBall(ball1);
+            poolProcessor.AddBall(ball2);
+
+            bool collisionDetected = false;
+
+            poolProcessor.BallCollision += (sender, args) =>
+            {
+                collisionDetected = true;
+            };
+
+            var maxWaitTime = TimeSpan.FromMilliseconds(100);
+            var timeout = new CancellationTokenSource(maxWaitTime);
+
+            poolProcessor.Start();
+
+            while (!timeout.Token.IsCancellationRequested && !collisionDetected)
+            {
+                Thread.Sleep(10);
+            }
+
+            poolProcessor.Stop();
+
+            Assert.IsFalse(collisionDetected);
+        }
     }
 }

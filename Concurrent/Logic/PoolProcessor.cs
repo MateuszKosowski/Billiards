@@ -11,6 +11,16 @@ namespace Logic
         private Stopwatch stopwatch = new Stopwatch();
         private readonly System.Timers.Timer timer;
 
+        public bool BallCollisionDetected { get; private set; } = false;
+        public event EventHandler<BallCollisionEventArgs> BallCollision;
+
+        public class BallCollisionEventArgs : EventArgs
+        {
+            public Ball Ball1 { get; set; }
+            public Ball Ball2 { get; set; }
+            public DateTime CollisionTime { get; set; }
+        }
+
         // Konstruktor
         public PoolProcessor(Data.PoolTable poolTable)
         {
@@ -32,6 +42,12 @@ namespace Logic
             timer.Start();
             stopwatch.Start();
      
+        }
+
+        public void Stop()
+        {
+            timer.Stop();
+            stopwatch.Stop();
         }
 
         // Funkcja aktualizująca pozycje kul co 10ms
@@ -104,6 +120,20 @@ namespace Logic
                 if (distance < (ball.Radius + otherBall.Radius))
                 {
                     Console.WriteLine($"Kula {ball.Color} zderzyła się z kulą {otherBall.Color}");
+
+                    BallCollisionDetected = true;
+
+                    BallCollision?.Invoke(this, new BallCollisionEventArgs
+                    {
+                        Ball1 = ball,
+                        Ball2 = otherBall,
+                        CollisionTime = DateTime.Now
+                    });
+
+                    ball.VelocityX = -ball.VelocityX;
+                    ball.VelocityY = -ball.VelocityY;
+                    otherBall.VelocityY = -otherBall.VelocityY;
+                    otherBall.VelocityX = -otherBall.VelocityX;
                     return true;
                 }
             }
