@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Timers;
 using System;
+using System.Numerics;
 
 namespace Logic
 {
@@ -10,14 +11,20 @@ namespace Logic
         private Data.PoolTable _poolTable { get; init; }
         private Stopwatch stopwatch = new Stopwatch();
         private readonly System.Timers.Timer timer;
+        public event EventHandler<BallsCollisionEventArgs> BallsCollision;
+        public event EventHandler<WallsCollisionEventArgs> WallsCollision;
 
-        public bool BallCollisionDetected { get; private set; } = false;
-        public event EventHandler<BallCollisionEventArgs> BallCollision;
 
-        public class BallCollisionEventArgs : EventArgs
+        public class BallsCollisionEventArgs : EventArgs
         {
             public Ball Ball1 { get; set; }
             public Ball Ball2 { get; set; }
+            public DateTime CollisionTime { get; set; }
+        }
+
+        public class WallsCollisionEventArgs : EventArgs
+        {
+            public Ball Ball { get; set; }
             public DateTime CollisionTime { get; set; }
         }
 
@@ -75,18 +82,34 @@ namespace Logic
         // Funkcja sprawdzająca czy kula uderzyła w ścianę
         public void HandleWallCollision(Ball ball)
         {
+            if (IsWallCollision(ball))
+            {
+                WallsCollision?.Invoke(this, new WallsCollisionEventArgs
+                {
+                    Ball = ball,
+                    CollisionTime = DateTime.Now
+                });
+            }
+        }
+
+        public bool IsWallCollision(Ball ball)
+        {
+            bool isCollision = false;
             // Zderzenia na X
             if (ball.PositionX + ball.Radius >= _poolTable.Width)
             {
                 ball.VelocityX = -ball.VelocityX;
                 ball.PositionX = _poolTable.Width - ball.Radius - 0.01;
                 Console.WriteLine($"Kula {ball.Color} odbiła się od prawej ściany");
+                isCollision = true;
+
             }
             else if (ball.PositionX - ball.Radius <= 0)
             {
                 ball.VelocityX = -ball.VelocityX;
                 ball.PositionX = ball.Radius + 0.01;
                 Console.WriteLine($"Kula {ball.Color} odbiła się od lewej ściany");
+                isCollision = true;
             }
 
             // Zderzenia na Y
@@ -95,13 +118,17 @@ namespace Logic
                 ball.VelocityY = -ball.VelocityY;
                 ball.PositionY = _poolTable.Height - ball.Radius - 0.01;
                 Console.WriteLine($"Kula {ball.Color} odbiła się od dolnej ściany");
+                isCollision = true;
             }
-            else if(ball.PositionY - ball.Radius <= 0)
+            else if (ball.PositionY - ball.Radius <= 0)
             {
                 ball.VelocityY = -ball.VelocityY;
                 ball.PositionY = ball.Radius + 0.01;
                 Console.WriteLine($"Kula {ball.Color} odbiła się od górnej ściany");
+                return true;
             }
+
+            return isCollision;
         }
 
         public bool IsAnotherBallColliding(Ball ball)
@@ -121,19 +148,16 @@ namespace Logic
                 {
                     Console.WriteLine($"Kula {ball.Color} zderzyła się z kulą {otherBall.Color}");
 
-                    BallCollisionDetected = true;
-
-                    BallCollision?.Invoke(this, new BallCollisionEventArgs
+                    BallsCollision?.Invoke(this, new BallsCollisionEventArgs
                     {
                         Ball1 = ball,
                         Ball2 = otherBall,
                         CollisionTime = DateTime.Now
                     });
 
-                    ball.VelocityX = -ball.VelocityX;
-                    ball.VelocityY = -ball.VelocityY;
-                    otherBall.VelocityY = -otherBall.VelocityY;
-                    otherBall.VelocityX = -otherBall.VelocityX;
+
+                    ResolveCollision(ball, otherBall, dx, dy, distance);
+
                     return true;
                 }
             }
@@ -141,16 +165,38 @@ namespace Logic
             return false;
         }
 
-        static void Main(string[] args)
-        {
-            PoolProcessor proc = new PoolProcessor(new PoolTable(100, 100));
+        public void ResolveCollision(Ball ballA, Ball ballB, double distanceX, double distanceY, double distance)
+        {     
+            // Normalizacja wektora
+            distanceX /= distance;
+            distanceY /= distance;
 
-            // Dodaj dwie kule z różnymi prędkościami
-            proc.AddBall(new Ball(1, "red", 2, 1, 1, 1, 1));
-            proc.AddBall(new Ball (1, "blue", 5, 3, 3, 2, 2));
+            // Wektor styczny (prostopadły do normalnego)
+            double tangentX = -distanceY;
+            double tangentY = -distanceX;
 
-            // Uruchom symulację
-            proc.Start();
+            // Rzutowanie prędkości na osie normalnej i stycznej
+            double velocityANormal = ballA.VelocityX * distanceX + ballA.VelocityY * distanceY;
+            double velocityATangent = ballA.VelocityX * tangentX + ballA.VelocityY * tangentY;
+            double velocityBNormal = ballB.VelocityX * distanceX + ballB.VelocityY * tangentY;
+            double velocityBTangent = ballB.VelocityX * tangentX + ballB.VelocityY * tangentY;
+
+            // Zmiana składowych normalnych
+            double velocityANormalNew = velocityBNormal;
+            double velocityBNormalNew = velocityANormal;
+
+            Console.WriteLine("Predkosc kuli A: " + ballA.VelocityX + " " + ballA.VelocityY);
+            Console.WriteLine("Predkosc kuli B: " + ballB.VelocityX + " " + ballB.VelocityY);
+
+            // Trnsformacja na układ globaly
+            ballA.VelocityX = velocityANormalNew * distanceX + velocityATangent * tangentX;
+            ballA.VelocityY = velocityANormalNew * distanceY + velocityATangent * tangentY;
+            ballB.VelocityX = velocityBNormalNew * distanceX + velocityBTangent * tangentX;
+            ballB.VelocityY = velocityBNormalNew * distanceY + velocityBTangent * tangentY;
+            
+            Console.WriteLine("Nowa predkosc kuli A: " + ballA.VelocityX + " " + ballA.VelocityY);
+            Console.WriteLine("Nowa predkosc kuli B: " + ballB.VelocityX + " " + ballB.VelocityY);
+
 
         }
     }

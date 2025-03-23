@@ -39,14 +39,14 @@ namespace Test
             poolProcessor.AddBall(ball1);
             poolProcessor.AddBall(ball2);
 
-            // Timer działa asynchronicznie, więc testy muszą czekać na jego wykonanie.
-            // Zamiast tego można ręcznie wywołać metodę Update, ale to nie jest zalecane.Tylko na potrzeby testów.
+            poolProcessor.Start();
+
             for (int i = 0; i < 100; i++)
             {
-                poolProcessor.Update(null, null);
-                Thread.Sleep(10); // Symulacja odstępu czasowego 20ms
+                Thread.Sleep(10); // Symulacja odstępu czasowego 10ms
             }
 
+            poolProcessor.Stop();
 
             Assert.IsTrue(ball1.PositionX > 1 && ball1.PositionY > 0.5);
             Assert.IsTrue(ball2.PositionX > 3 && ball2.PositionY > 2);
@@ -54,18 +54,21 @@ namespace Test
         }
 
         [TestMethod]
-        public void BallHitTabelWallTest()
+        public void BallHitTableWallTest()
         {
             PoolTable poolTable = new PoolTable(10, 10);
             PoolProcessor poolProcessor = new PoolProcessor(poolTable);
             Ball ball1 = new Ball(1, "green", 9, 2, 2, -10, -10);
             poolProcessor.AddBall(ball1);
 
+            poolProcessor.Start();
+
             for (int i = 0; i < 15; i++)
             {
-                poolProcessor.Update(null, null);
                 Thread.Sleep(10); // Symulacja odstępu czasowego 10ms
             }
+
+            poolProcessor.Stop();
 
             Assert.IsTrue(ball1.VelocityX > 0 && ball1.VelocityY > 0);
 
@@ -83,7 +86,7 @@ namespace Test
 
             bool collisionDetected = false;
 
-            poolProcessor.BallCollision += (sender, args) =>
+            poolProcessor.BallsCollision += (sender, args) =>
             {
                 collisionDetected = true;
             };
@@ -115,9 +118,10 @@ namespace Test
 
             bool collisionDetected = false;
 
-            poolProcessor.BallCollision += (sender, args) =>
+            poolProcessor.BallsCollision += (sender, args) =>
             {
                 collisionDetected = true;
+                Console.WriteLine("Czas kolizji między bilami: " + args.CollisionTime);
             };
 
             var maxWaitTime = TimeSpan.FromMilliseconds(100);
