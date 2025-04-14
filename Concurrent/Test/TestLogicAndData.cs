@@ -32,8 +32,7 @@ namespace Test
         [TestMethod]
         public void MovingBallsTest()
         {
-            //PoolTable poolTable = new PoolTable(100, 100);
-            PoolProcessor poolProcessor = new PoolProcessor();
+            IPoolProcessor poolProcessor = new PoolProcessor();
             poolProcessor.CreateTable(20.0f, 10.0f);
             poolProcessor.AddBalls(2);
 

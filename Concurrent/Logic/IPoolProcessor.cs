@@ -2,7 +2,7 @@
 
 namespace Logic
 {
-    interface IPoolProcessor
+    public interface IPoolProcessor
     {
         void Start();
 
