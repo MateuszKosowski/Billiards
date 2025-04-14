@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Data.Entities;
 
 namespace Logic
 {
@@ -12,8 +8,12 @@ namespace Logic
 
         void Stop();
 
-        void AddBall();
+        void AddBalls(int _amount);
 
-        
+        void ClearTable();
+
+        void CreateTable(float _width, float _height);
+
+        IEnumerable<IBall> GetAllBallsFromTable();
     }
 }

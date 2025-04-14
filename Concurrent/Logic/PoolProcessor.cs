@@ -1,9 +1,7 @@
-﻿using System.Diagnostics;
-using System.Timers;
-using System;
-using System.Numerics;
+﻿using Data.Api;
 using Data.Entities;
-using Data.Api;
+using System.Diagnostics;
+using System.Timers;
 
 namespace Logic
 {
@@ -16,6 +14,10 @@ namespace Logic
         public event EventHandler<BallsCollisionEventArgs> BallsCollision;
         public event EventHandler<WallsCollisionEventArgs> WallsCollision;
         public event EventHandler<IBall> BallMoving;
+        private List<String> _allColors = new List<String> { "Red", "Blue", "Green", "Pink", "Brown", "Yellow", "Orange"};
+
+
+
 
         public class BallsCollisionEventArgs : EventArgs
         {
@@ -31,8 +33,9 @@ namespace Logic
         }
 
         // Konstruktor
-        public PoolProcessor(PoolTable poolTable)
+        public PoolProcessor()
         {
+            _dataApi = new DataApi();
             _updateTimer = new System.Timers.Timer(10);
             _updateTimer.Elapsed += Update;
             _updateTimer.AutoReset = true;
@@ -43,7 +46,7 @@ namespace Logic
         {
             _updateTimer.Start();
             stopwatch.Start();
-     
+
         }
 
         public void Stop()
@@ -116,7 +119,7 @@ namespace Logic
                 newX = ball.Radius + 0.01;
 
                 _dataApi.UpdateBall(ball, (float)newX, ball.Position[1], newVX, null);
-      
+
                 Console.WriteLine($"Kula {ball.Color} odbiła się od lewej ściany");
                 isCollision = true;
             }
@@ -130,7 +133,7 @@ namespace Logic
                 double newY = (double)ball.Position[1];
                 newY = _dataApi.GetTableSize()[1] - ball.Radius - 0.01;
 
-                _dataApi.UpdateBall(ball, ball.Position[0], (float) newY, null, newVY);
+                _dataApi.UpdateBall(ball, ball.Position[0], (float)newY, null, newVY);
 
                 Console.WriteLine($"Kula {ball.Color} odbiła się od dolnej ściany");
                 isCollision = true;
@@ -151,6 +154,33 @@ namespace Logic
             }
 
             return isCollision;
+        }
+
+        public void AddBalls(int _amount)
+        {
+           for(int i = 0; i < _amount; i++)
+            {
+                IBall ball = _dataApi.CreateBall(_allColors[i], 1, i + 1);
+                _dataApi.AddBallToTable(ball);
+            }
+        }
+
+        public void ClearTable()
+        {
+            foreach (var ball in _dataApi.GetAllBallsFromTable())
+            {
+                _dataApi.DeleteBallFromTable(ball);
+            }
+        }
+
+        public IEnumerable<IBall> GetAllBallsFromTable()
+        {
+            return _dataApi.GetAllBallsFromTable();
+        }
+
+        public void CreateTable(float _width, float _height)
+        {
+            _dataApi.CreatePoolTable(_width, _height);
         }
 
 
@@ -218,16 +248,13 @@ namespace Logic
         //    ballA.VelocityY = velocityANormalNew * distanceY + velocityATangent * tangentY;
         //    ballB.VelocityX = velocityBNormalNew * distanceX + velocityBTangent * tangentX;
         //    ballB.VelocityY = velocityBNormalNew * distanceY + velocityBTangent * tangentY;
-            
+
         //    Console.WriteLine("Nowa predkosc kuli A: " + ballA.VelocityX + " " + ballA.VelocityY);
         //    Console.WriteLine("Nowa predkosc kuli B: " + ballB.VelocityX + " " + ballB.VelocityY);
 
 
         //}
 
-        public void AddBall()
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }

@@ -1,10 +1,5 @@
 ﻿using Data.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Data.Api
 {
@@ -18,8 +13,9 @@ namespace Data.Api
             _poolTable.AddBall(ball);
         }
 
-        public IBall CreateBall(string color, int radius, int number, float vx, float vy)
+        public IBall CreateBall(string color, int radius, int number)
         {
+            Console.WriteLine("Staram sie utworzyc kule");
             float xTable = _poolTable.Width;
             float yTable = _poolTable.Height;
 
@@ -27,7 +23,13 @@ namespace Data.Api
             float x = (float)_random.NextDouble() * (xTable - 2 * radius) + radius;
             float y = (float)_random.NextDouble() * (yTable - 2 * radius) + radius;
 
+            // Generuj losową prędkość w granicach -1 do 1
+            float vx = (float)_random.NextDouble() * 2 - 1;
+            float vy = (float)_random.NextDouble() * 2 - 1;
+
             Ball ball = new Ball(radius, color, number, x, y, vx, vy);
+            Console.WriteLine("Utworzono kule " + ball.Color + " o numerze " + ball.Number);
+
             return ball;
         }
 
@@ -58,7 +60,7 @@ namespace Data.Api
 
         public Vector2 GetTableSize()
         {
-            return new Vector2(_poolTable.Width,  _poolTable.Height);
+            return new Vector2(_poolTable.Width, _poolTable.Height);
         }
     }
 }

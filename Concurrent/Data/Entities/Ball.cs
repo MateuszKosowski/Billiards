@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace Data.Entities
 {
@@ -47,17 +46,21 @@ namespace Data.Entities
         }
 
         // Właściowości z interfejsu
-        public Vector2 Position { 
-            get => new Vector2(_positionX, _positionY); 
-            set {
-                _positionX = value.X; 
-                _positionY = value.Y; 
-            } 
+        public Vector2 Position
+        {
+            get => new Vector2(_positionX, _positionY);
+            set
+            {
+                _positionX = value.X;
+                _positionY = value.Y;
+            }
         }
 
-        public Vector2 Velocity { 
+        public Vector2 Velocity
+        {
             get => new Vector2(_velocityX, _velocityY);
-            set {
+            set
+            {
                 _velocityX = value.X;
                 _velocityY = value.Y;
             }
