@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Data
+namespace Data.Entities
 {
-    public class PoolTable
+    public class PoolTable : IPoolTable
     {
         private float _width { get; init; }
         private float _height { get; init; }
-        private List<Ball> _balls;
+        private List<Ball> _balls { get; set; }
 
         public PoolTable(float width, float height)
         {
@@ -29,10 +29,20 @@ namespace Data
             get { return _height; }
         }
 
-        public List<Ball> Balls
+        public void AddBall(IBall ball)
         {
-            get { return _balls; }
-            set { _balls = value; }
+            _balls.Add((Ball)ball);
+        }
+
+        public void DeleteBall(IBall ball)
+        {
+            _balls.Remove((Ball)ball);
+        }
+
+        // Widok tylko do odczytu, można się iterować
+        public IEnumerable<IBall> GetAllBalls()
+        {
+            return _balls;
         }
     }
 }

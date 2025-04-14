@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Data;
 using Logic;
 using System.Threading;
+using Data.Entities;
 
 namespace Test
 {
@@ -19,6 +19,8 @@ namespace Test
             Assert.AreEqual(0, ball.PositionY);
             Assert.AreEqual(1, ball.VelocityX);
             Assert.AreEqual(1, ball.VelocityY);
+            Assert.IsNotNull(ball);
+            Assert.IsInstanceOfType(ball, typeof(Ball));
         }
 
         [TestMethod]

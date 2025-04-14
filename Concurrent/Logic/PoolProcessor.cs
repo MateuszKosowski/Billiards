@@ -1,16 +1,17 @@
-﻿using Data;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Timers;
 using System;
 using System.Numerics;
+using Data.Entities;
 
 namespace Logic
 {
-    public class PoolProcessor
+    public class PoolProcessor : IPoolProcessor
     {
-        private Data.PoolTable _poolTable { get; init; }
+        private readonly IBall _ballFactory;
+        private readonly IPoolTable _poolTable;
+        private System.Timers.Timer _updateTimer;
         private Stopwatch stopwatch = new Stopwatch();
-        private readonly System.Timers.Timer timer;
         public event EventHandler<BallsCollisionEventArgs> BallsCollision;
         public event EventHandler<WallsCollisionEventArgs> WallsCollision;
 
@@ -29,7 +30,7 @@ namespace Logic
         }
 
         // Konstruktor
-        public PoolProcessor(Data.PoolTable poolTable)
+        public PoolProcessor(PoolTable poolTable)
         {
             _poolTable = poolTable;
             timer = new System.Timers.Timer(10);
@@ -68,7 +69,7 @@ namespace Logic
                 ball.PositionX += ball.VelocityX * timeDelta;
                 ball.PositionY += ball.VelocityY * timeDelta;
                 HandleWallCollision(ball);
-                IsAnotherBallColliding(ball);
+                //IsAnotherBallColliding(ball);
             }
 
 
