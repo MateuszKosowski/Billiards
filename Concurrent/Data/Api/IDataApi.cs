@@ -7,18 +7,20 @@ using System.Threading.Tasks;
 
 namespace Data.Api
 {
-    interface IDataApi
+    public interface IDataApi
     {
-        IBall CreateBall(string color, int radius, int number, float vx, float vy, IPoolTable table);
+        IBall CreateBall(string color, int radius, int number, float vx, float vy);
 
-        void UpdateBall(IBall ball, float? x, float? y, float? vx, float? vy);
+        void UpdateBall(IBall ball, float x, float y, float? vx, float? vy);
 
-        IPoolTable CreatePoolTable(float width, float height);
+        void CreatePoolTable(float width, float height);
 
-        void AddBallToTable(IBall ball, IPoolTable table);
+        void AddBallToTable(IBall ball);
 
-        void DeleteBallFromTable(IBall ball, IPoolTable table);
+        void DeleteBallFromTable(IBall ball);
 
-        IEnumerable<IBall> GetAllBallsFromTable(IPoolTable table);
+        Vector2 GetTableSize();
+
+        IEnumerable<IBall> GetAllBallsFromTable();
     }
 }

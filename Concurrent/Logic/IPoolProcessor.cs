@@ -8,12 +8,12 @@ namespace Logic
 {
     interface IPoolProcessor
     {
-        void Initialize();
+        void Start();
 
-        void StartSimulation();
+        void Stop();
 
-        void StopSimulation();
+        void AddBall();
 
-        event EventHandler<BallsUpdateEventArgs> BallsUpdated;
+        
     }
 }

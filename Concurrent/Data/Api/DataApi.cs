@@ -8,19 +8,20 @@ using System.Threading.Tasks;
 
 namespace Data.Api
 {
-    class DataApi : IDataApi
+    public class DataApi : IDataApi
     {
         private readonly Random _random = new Random(); // Do generowania pozycji
+        private IPoolTable _poolTable;
 
-        public void AddBallToTable(IBall ball, IPoolTable table)
+        public void AddBallToTable(IBall ball)
         {
-            table.AddBall(ball);
+            _poolTable.AddBall(ball);
         }
 
-        public IBall CreateBall(string color, int radius, int number, float vx, float vy, IPoolTable table)
+        public IBall CreateBall(string color, int radius, int number, float vx, float vy)
         {
-            float xTable = table.Width;
-            float yTable = table.Height;
+            float xTable = _poolTable.Width;
+            float yTable = _poolTable.Height;
 
             // Generuj losową pozycję w granicach stołu, uwzględniając promień [source: 8, source: 6]
             float x = (float)_random.NextDouble() * (xTable - 2 * radius) + radius;
@@ -30,33 +31,34 @@ namespace Data.Api
             return ball;
         }
 
-        public IPoolTable CreatePoolTable(float width, float height)
+        public void CreatePoolTable(float width, float height)
         {
-            PoolTable table = new PoolTable(width, height);
-            return table;
+            _poolTable = new PoolTable(width, height);
         }
 
-        public void DeleteBallFromTable(IBall ball, IPoolTable table)
+        public void DeleteBallFromTable(IBall ball)
         {
-            table.DeleteBall(ball);
+            _poolTable.DeleteBall(ball);
         }
 
-        public IEnumerable<IBall> GetAllBallsFromTable(IPoolTable table)
+        public IEnumerable<IBall> GetAllBallsFromTable()
         {
-            return table.GetAllBalls();
+            return _poolTable.GetAllBalls();
         }
 
-        public void UpdateBall(IBall ball, float? x, float? y, float? vx, float? vy)
+        public void UpdateBall(IBall ball, float x, float y, float? vx, float? vy)
         {
-            if (x != null && y != null)
-            {
-                ball.Position = new Vector2(x.Value, y.Value);
-            }
+            ball.Position = new Vector2(x, y);
 
             if (vx != null && vy != null)
             {
                 ball.Velocity = new Vector2(vx.Value, vy.Value);
             }
+        }
+
+        public Vector2 GetTableSize()
+        {
+            return new Vector2(_poolTable.Width,  _poolTable.Height);
         }
     }
 }

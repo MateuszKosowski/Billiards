@@ -3,18 +3,19 @@ using System.Timers;
 using System;
 using System.Numerics;
 using Data.Entities;
+using Data.Api;
 
 namespace Logic
 {
     public class PoolProcessor : IPoolProcessor
     {
-        private readonly IBall _ballFactory;
-        private readonly IPoolTable _poolTable;
+        private readonly IDataApi _dataApi;
+
         private System.Timers.Timer _updateTimer;
         private Stopwatch stopwatch = new Stopwatch();
         public event EventHandler<BallsCollisionEventArgs> BallsCollision;
         public event EventHandler<WallsCollisionEventArgs> WallsCollision;
-
+        public event EventHandler<IBall> BallMoving;
 
         public class BallsCollisionEventArgs : EventArgs
         {
@@ -25,36 +26,29 @@ namespace Logic
 
         public class WallsCollisionEventArgs : EventArgs
         {
-            public Ball Ball { get; set; }
+            public IBall Ball { get; set; }
             public DateTime CollisionTime { get; set; }
         }
 
         // Konstruktor
         public PoolProcessor(PoolTable poolTable)
         {
-            _poolTable = poolTable;
-            timer = new System.Timers.Timer(10);
-            timer.Elapsed += Update;
-            timer.AutoReset = true;
-        }
-
-        // Dodanie kuli do stołu
-        public void AddBall(Ball ball)
-        {
-            _poolTable.Balls.Add(ball);
+            _updateTimer = new System.Timers.Timer(10);
+            _updateTimer.Elapsed += Update;
+            _updateTimer.AutoReset = true;
         }
 
         // Rozpoczęcie symulacji
         public void Start()
         {
-            timer.Start();
+            _updateTimer.Start();
             stopwatch.Start();
      
         }
 
         public void Stop()
         {
-            timer.Stop();
+            _updateTimer.Stop();
             stopwatch.Stop();
         }
 
@@ -64,24 +58,25 @@ namespace Logic
             double timeDelta = stopwatch.Elapsed.TotalSeconds;
             stopwatch.Restart();
 
-            foreach (var ball in _poolTable.Balls)
+            foreach (var ball in _dataApi.GetAllBallsFromTable())
             {
-                ball.PositionX += ball.VelocityX * timeDelta;
-                ball.PositionY += ball.VelocityY * timeDelta;
+                double newX = (double)ball.Position[0];
+                newX += ball.Velocity[0] * timeDelta;
+                double newY = (double)ball.Position[1];
+                newY += ball.Velocity[1] * timeDelta;
+
+                _dataApi.UpdateBall(ball, (float)newX, (float)newY, null, null);
+
                 HandleWallCollision(ball);
+
+                BallMoving?.Invoke(this, ball);
+
                 //IsAnotherBallColliding(ball);
-            }
-
-
-            // Roboczo do wyświetlenia pozycji kul
-            foreach (var ball in _poolTable.Balls)
-            {
-                Console.WriteLine($"Kula {ball.Color} w pozycji ({ball.PositionX:F2}, {ball.PositionY:F2})");
             }
         }
 
         // Funkcja sprawdzająca czy kula uderzyła w ścianę
-        public void HandleWallCollision(Ball ball)
+        public void HandleWallCollision(IBall ball)
         {
             if (IsWallCollision(ball))
             {
@@ -93,38 +88,64 @@ namespace Logic
             }
         }
 
-        public bool IsWallCollision(Ball ball)
+        public bool IsWallCollision(IBall ball)
         {
             bool isCollision = false;
+
             // Zderzenia na X
-            if (ball.PositionX + ball.Radius >= _poolTable.Width)
+            if (ball.Position[0] + ball.Radius >= _dataApi.GetTableSize()[0])
             {
-                ball.VelocityX = -ball.VelocityX;
-                ball.PositionX = _poolTable.Width - ball.Radius - 0.01;
+                float newVX = ball.Velocity[0];
+                newVX = -newVX;
+
+                double newX = (double)ball.Position[0];
+                newX = _dataApi.GetTableSize()[0] - ball.Radius - 0.01;
+
+                _dataApi.UpdateBall(ball, (float)newX, ball.Position[1], newVX, null);
+
                 Console.WriteLine($"Kula {ball.Color} odbiła się od prawej ściany");
                 isCollision = true;
 
             }
-            else if (ball.PositionX - ball.Radius <= 0)
+            else if (ball.Position[0] - ball.Radius <= 0)
             {
-                ball.VelocityX = -ball.VelocityX;
-                ball.PositionX = ball.Radius + 0.01;
+                float newVX = ball.Velocity[0];
+                newVX = -newVX;
+
+                double newX = (double)ball.Position[0];
+                newX = ball.Radius + 0.01;
+
+                _dataApi.UpdateBall(ball, (float)newX, ball.Position[1], newVX, null);
+      
                 Console.WriteLine($"Kula {ball.Color} odbiła się od lewej ściany");
                 isCollision = true;
             }
 
             // Zderzenia na Y
-            if (ball.PositionY + ball.Radius >= _poolTable.Height)
+            if (ball.Position[1] + ball.Radius >= _dataApi.GetTableSize()[1])
             {
-                ball.VelocityY = -ball.VelocityY;
-                ball.PositionY = _poolTable.Height - ball.Radius - 0.01;
+                float newVY = ball.Velocity[0];
+                newVY = -newVY;
+
+                double newY = (double)ball.Position[1];
+                newY = _dataApi.GetTableSize()[1] - ball.Radius - 0.01;
+
+                _dataApi.UpdateBall(ball, ball.Position[0], (float) newY, null, newVY);
+
                 Console.WriteLine($"Kula {ball.Color} odbiła się od dolnej ściany");
                 isCollision = true;
             }
-            else if (ball.PositionY - ball.Radius <= 0)
+
+            else if (ball.Position[1] - ball.Radius <= 0)
             {
-                ball.VelocityY = -ball.VelocityY;
-                ball.PositionY = ball.Radius + 0.01;
+                float newVY = ball.Velocity[0];
+                newVY = -newVY;
+
+                double newY = (double)ball.Position[1];
+                newY = ball.Radius + 0.01;
+
+                _dataApi.UpdateBall(ball, ball.Position[0], (float)newY, null, newVY);
+
                 Console.WriteLine($"Kula {ball.Color} odbiła się od górnej ściany");
                 return true;
             }
@@ -132,73 +153,81 @@ namespace Logic
             return isCollision;
         }
 
-        public bool IsAnotherBallColliding(Ball ball)
-        {
-            foreach (Ball otherBall in _poolTable.Balls)
-            {
-                // Nie prowadź testu kolizji z samą sobą
-                if (otherBall == ball) continue;
 
-                // obliczenie odległości między kulami
-                double dx = ball.PositionX - otherBall.PositionX;
-                double dy = ball.PositionY - otherBall.PositionY;
-                double distance = Math.Sqrt(dx * dx + dy * dy);
+        //-----------------------NA KOLEJNY ETAP-------------------------------------
 
-                // jeśli dystans jest mniejszy niż suma promieni kul, to znaczy, że kule się zderzają
-                if (distance < (ball.Radius + otherBall.Radius))
-                {
-                    Console.WriteLine($"Kula {ball.Color} zderzyła się z kulą {otherBall.Color}");
+        //public bool IsAnotherBallColliding(Ball ball)
+        //{
+        //    foreach (Ball otherBall in _poolTable.Balls)
+        //    {
+        //        // Nie prowadź testu kolizji z samą sobą
+        //        if (otherBall == ball) continue;
 
-                    BallsCollision?.Invoke(this, new BallsCollisionEventArgs
-                    {
-                        Ball1 = ball,
-                        Ball2 = otherBall,
-                        CollisionTime = DateTime.Now
-                    });
+        //        // obliczenie odległości między kulami
+        //        double dx = ball.PositionX - otherBall.PositionX;
+        //        double dy = ball.PositionY - otherBall.PositionY;
+        //        double distance = Math.Sqrt(dx * dx + dy * dy);
+
+        //        // jeśli dystans jest mniejszy niż suma promieni kul, to znaczy, że kule się zderzają
+        //        if (distance < (ball.Radius + otherBall.Radius))
+        //        {
+        //            Console.WriteLine($"Kula {ball.Color} zderzyła się z kulą {otherBall.Color}");
+
+        //            BallsCollision?.Invoke(this, new BallsCollisionEventArgs
+        //            {
+        //                Ball1 = ball,
+        //                Ball2 = otherBall,
+        //                CollisionTime = DateTime.Now
+        //            });
 
 
-                    ResolveCollision(ball, otherBall, dx, dy, distance);
+        //            ResolveCollision(ball, otherBall, dx, dy, distance);
 
-                    return true;
-                }
-            }
+        //            return true;
+        //        }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
-        public void ResolveCollision(Ball ballA, Ball ballB, double distanceX, double distanceY, double distance)
-        {     
-            // Normalizacja wektora
-            distanceX /= distance;
-            distanceY /= distance;
+        //public void ResolveCollision(Ball ballA, Ball ballB, float distanceX, float distanceY, float distance)
+        //{     
+        //    // Normalizacja wektora
+        //    distanceX /= distance;
+        //    distanceY /= distance;
 
-            // Wektor styczny (prostopadły do normalnego)
-            double tangentX = -distanceY;
-            double tangentY = -distanceX;
+        //    // Wektor styczny (prostopadły do normalnego)
+        //    float tangentX = -distanceY;
+        //    float tangentY = -distanceX;
 
-            // Rzutowanie prędkości na osie normalnej i stycznej
-            double velocityANormal = ballA.VelocityX * distanceX + ballA.VelocityY * distanceY;
-            double velocityATangent = ballA.VelocityX * tangentX + ballA.VelocityY * tangentY;
-            double velocityBNormal = ballB.VelocityX * distanceX + ballB.VelocityY * tangentY;
-            double velocityBTangent = ballB.VelocityX * tangentX + ballB.VelocityY * tangentY;
+        //    // Rzutowanie prędkości na osie normalnej i stycznej
+        //    float velocityANormal = ballA.VelocityX * distanceX + ballA.VelocityY * distanceY;
+        //    float velocityATangent = ballA.VelocityX * tangentX + ballA.VelocityY * tangentY;
+        //    float velocityBNormal = ballB.VelocityX * distanceX + ballB.VelocityY * tangentY;
+        //    float velocityBTangent = ballB.VelocityX * tangentX + ballB.VelocityY * tangentY;
 
-            // Zmiana składowych normalnych
-            double velocityANormalNew = velocityBNormal;
-            double velocityBNormalNew = velocityANormal;
+        //    // Zmiana składowych normalnych
+        //    float velocityANormalNew = velocityBNormal;
+        //    float velocityBNormalNew = velocityANormal;
 
-            Console.WriteLine("Predkosc kuli A: " + ballA.VelocityX + " " + ballA.VelocityY);
-            Console.WriteLine("Predkosc kuli B: " + ballB.VelocityX + " " + ballB.VelocityY);
+        //    Console.WriteLine("Predkosc kuli A: " + ballA.VelocityX + " " + ballA.VelocityY);
+        //    Console.WriteLine("Predkosc kuli B: " + ballB.VelocityX + " " + ballB.VelocityY);
 
-            // Trnsformacja na układ globaly
-            ballA.VelocityX = velocityANormalNew * distanceX + velocityATangent * tangentX;
-            ballA.VelocityY = velocityANormalNew * distanceY + velocityATangent * tangentY;
-            ballB.VelocityX = velocityBNormalNew * distanceX + velocityBTangent * tangentX;
-            ballB.VelocityY = velocityBNormalNew * distanceY + velocityBTangent * tangentY;
+        //    // Trnsformacja na układ globaly
+        //    ballA.VelocityX = velocityANormalNew * distanceX + velocityATangent * tangentX;
+        //    ballA.VelocityY = velocityANormalNew * distanceY + velocityATangent * tangentY;
+        //    ballB.VelocityX = velocityBNormalNew * distanceX + velocityBTangent * tangentX;
+        //    ballB.VelocityY = velocityBNormalNew * distanceY + velocityBTangent * tangentY;
             
-            Console.WriteLine("Nowa predkosc kuli A: " + ballA.VelocityX + " " + ballA.VelocityY);
-            Console.WriteLine("Nowa predkosc kuli B: " + ballB.VelocityX + " " + ballB.VelocityY);
+        //    Console.WriteLine("Nowa predkosc kuli A: " + ballA.VelocityX + " " + ballA.VelocityY);
+        //    Console.WriteLine("Nowa predkosc kuli B: " + ballB.VelocityX + " " + ballB.VelocityY);
 
 
+        //}
+
+        public void AddBall()
+        {
+            throw new NotImplementedException();
         }
     }
 }
