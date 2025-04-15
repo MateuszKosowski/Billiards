@@ -64,26 +64,39 @@ namespace Test
 
         }
 
-        //[TestMethod]
-        //public void BallHitTableWallTest()
-        //{
-        //    PoolTable poolTable = new PoolTable(10, 10);
-        //    PoolProcessor poolProcessor = new PoolProcessor(poolTable);
-        //    Ball ball1 = new Ball(1, "green", 9, 2, 2, -10, -10);
-        //    poolProcessor.AddBall(ball1);
+        [TestMethod]
+        public void BallHitTableWallTest()
+        {
+            IPoolProcessor poolProcessor = new PoolProcessor();
+            poolProcessor.CreateTable(4.0f, 4.0f);
+            poolProcessor.AddBalls(1);
 
-        //    poolProcessor.Start();
+            bool wallCollisionDetected = false;
 
-        //    for (int i = 0; i < 15; i++)
-        //    {
-        //        Thread.Sleep(10); // Symulacja odstępu czasowego 10ms
-        //    }
+            // Subskrypcja - czyli event handler na konkretne zdarzenie
+            // += oznacza dodanie nowego event handlera, który czeka na ten event
+            poolProcessor.WallsCollision += (sender, args) =>
+            {
+                wallCollisionDetected = true;
+                Console.WriteLine($"Ball {args.Ball.Color} hit wall at {args.CollisionTime}");
+            };
 
-        //    poolProcessor.Stop();
+            poolProcessor.Start();
 
-        //    Assert.IsTrue(ball1.VelocityX > 0 && ball1.VelocityY > 0);
+            // Maximum wait time for collision detection
+            var maxWaitTime = TimeSpan.FromSeconds(5);
+            var startTime = DateTime.Now;
 
-        //}
+            while (!wallCollisionDetected && (DateTime.Now - startTime) < maxWaitTime)
+            {
+                Thread.Sleep(10);
+            }
+
+            poolProcessor.Stop();
+
+            // Assert that a wall collision was detected
+            Assert.IsTrue(wallCollisionDetected);
+        }
 
         //[TestMethod]
         //public void IsAnotherBallCollidingTest()

@@ -1,4 +1,5 @@
 ﻿using Data.Entities;
+using static Logic.PoolProcessor;
 
 namespace Logic
 {
@@ -15,5 +16,7 @@ namespace Logic
         void CreateTable(float _width, float _height);
 
         IEnumerable<IBall> GetAllBallsFromTable();
+
+        event EventHandler<WallsCollisionEventArgs> WallsCollision;
     }
 }
