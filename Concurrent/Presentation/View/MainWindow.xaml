@@ -5,8 +5,29 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Presentation"
         mc:Ignorable="d"
-        Title="Billards" Height="450" Width="800">
+
+        Title="Symulacja stołu bilardowego" 
+        Height="900" 
+        Width="1600" 
+        ResizeMode="NoResize">
+    
+    <!-- Główny kontener-->
     <Grid>
-        
+        <!-- Obramowanie stołu -->
+        <Border Background="SaddleBrown"
+            CornerRadius="15"
+            Padding="20"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+                Margin="50,0,0,0">
+
+            <!-- Stół (zielony Canvas wewnątrz ramki) -->
+            <Canvas Name="PoolTableCanvas"
+                    Background="ForestGreen"
+                    Width="1000"           
+                    Height="600" />
+
+        </Border>
     </Grid>
+    
 </Window>
