@@ -30,8 +30,8 @@
             <!-- Stół (zielony Canvas wewnątrz ramki) -->
             <Canvas Name="PoolTableCanvas"
                     Background="ForestGreen"
-                    Width="1000"           
-                    Height="600">
+                    Width="{Binding PWidth}"           
+                    Height="{Binding PHeight}">
 
                 <!-- Kule -->
                 <ItemsControl ItemsSource="{Binding Balls}">
@@ -64,7 +64,7 @@
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
             Margin="0,50,50,0"
-            Width="200">
+            Width="300">
 
             <Label Content="Ilość kul:" FontSize="20"/>
             

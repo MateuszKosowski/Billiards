@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace Presentation.Model
 {
+    /// <summary>
+    /// Model reprezentujący kulę bilardową w interfejsie użytkownika.
+    /// Implementuje INotifyPropertyChanged do obsługi wiązania danych WPF.
+    /// </summary>
     class BallModel : INotifyPropertyChanged
     {
         private double _x;
@@ -16,6 +20,9 @@ namespace Presentation.Model
         private int _diameter;
         private int _radius;
 
+        // Właściwość X określa pozycję lewego górnego rogu kuli na Canvas.
+        // Aby zgadzało się z naszym założeniem o środku w środku kuli - jest obliczana przez odjęcie promienia od środka kuli,
+        // co pozwala na poprawne wyświetlenie kuli na canvasie.
         public double X
         {
             get { return _x - _radius; }
@@ -72,8 +79,13 @@ namespace Presentation.Model
             }
         }
 
+        // Zdarzenie wywoływane, gdy właściwość modelu zostaje zmieniona.
+        // Implementacja interfejsu INotifyPropertyChanged wymagana dla poprawnego wiązania danych WPF.
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        // Metoda pomocnicza do wywoływania zdarzenia PropertyChanged.
+        // Powiadamia system wiązania danych WPF o zmianie wartości właściwości,
+        // co powoduje aktualizację interfejsu użytkownika.
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
