@@ -13,11 +13,12 @@ namespace Presentation.Model
         private double _y;
         private string _color;
         private int _number;
+        private int _diameter;
         private int _radius;
 
         public double X
         {
-            get { return _x; }
+            get { return _x - _radius; }
             set
             {
                 _x = value;
@@ -27,7 +28,7 @@ namespace Presentation.Model
 
         public double Y
         {
-            get { return _y; }
+            get { return _y - _radius; }
             set
             {
                 _y = value;
@@ -55,13 +56,19 @@ namespace Presentation.Model
             }
         }
 
+        public int Diameter
+        {
+            get { return _diameter; }
+        }
+
         public int Radius
         {
             get { return _radius; }
             set
             {
                 _radius = value;
-                OnPropertyChanged(nameof(Radius));
+                _diameter = value * 2;
+                OnPropertyChanged(nameof(_radius));
             }
         }
 

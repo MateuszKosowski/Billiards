@@ -18,13 +18,14 @@
 
     <!-- Główny kontener-->
     <Grid>
+       
         <!-- Obramowanie stołu -->
         <Border Background="SaddleBrown"
-            CornerRadius="15"
-            Padding="20"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-                Margin="50,0,0,0">
+             CornerRadius="15"
+             Padding="20"
+             HorizontalAlignment="Left"
+             VerticalAlignment="Center"
+                 Margin="50,0,0,0">
 
             <!-- Stół (zielony Canvas wewnątrz ramki) -->
             <Canvas Name="PoolTableCanvas"
@@ -41,9 +42,9 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Ellipse Width="{Binding Radius}"
-                             Height="{Binding Radius}"
-                             Fill="{Binding Color}" />
+                            <Ellipse Width="{Binding Diameter}"
+                                Height="{Binding Diameter}"
+                                Fill="{Binding Color}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                     <ItemsControl.ItemContainerStyle>
@@ -55,9 +56,8 @@
                 </ItemsControl>
             </Canvas>
 
+         </Border>
 
-
-        </Border>
 
         <!-- Panel kontrolny po prawej stronie -->
         <StackPanel 

@@ -158,7 +158,7 @@ namespace Logic
         {
            for(int i = 0; i < _amount; i++)
             {
-                IBall ball = _dataApi.CreateBall(_allColors[i], 20, i + 1);
+                IBall ball = _dataApi.CreateBall(_allColors[i], 10, i + 1);
                 _dataApi.AddBallToTable(ball);
             }
         }
