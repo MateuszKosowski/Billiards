@@ -14,10 +14,7 @@ namespace Logic
         public event EventHandler<BallsCollisionEventArgs> BallsCollision;
         public event EventHandler<WallsCollisionEventArgs> WallsCollision;
         public event EventHandler<IBall> BallMoving;
-        private List<String> _allColors = new List<String> { "Red", "Blue", "Green", "Pink", "Brown", "Yellow", "Orange"};
-
-
-
+        private List<String> _allColors = new List<String> { "Red", "Blue", "Lime", "Pink", "Brown", "Yellow", "Orange"};
 
         public class BallsCollisionEventArgs : EventArgs
         {
@@ -61,7 +58,8 @@ namespace Logic
             double timeDelta = stopwatch.Elapsed.TotalSeconds;
             stopwatch.Restart();
 
-            foreach (var ball in _dataApi.GetAllBallsFromTable())
+            var balls = _dataApi.GetAllBallsFromTable().ToList();
+            foreach (var ball in balls)
             {
                 double newX = (double)ball.Position[0];
                 newX += ball.Velocity[0] * timeDelta;
@@ -127,7 +125,7 @@ namespace Logic
             // Zderzenia na Y
             if (ball.Position[1] + ball.Radius >= _dataApi.GetTableSize()[1])
             {
-                float newVY = ball.Velocity[0];
+                float newVY = ball.Velocity[1]; // Zmień z ball.Velocity[0] na ball.Velocity[1]
                 newVY = -newVY;
 
                 double newY = (double)ball.Position[1];
@@ -138,10 +136,9 @@ namespace Logic
                 Console.WriteLine($"Kula {ball.Color} odbiła się od dolnej ściany");
                 isCollision = true;
             }
-
             else if (ball.Position[1] - ball.Radius <= 0)
             {
-                float newVY = ball.Velocity[0];
+                float newVY = ball.Velocity[1]; // Zmień z ball.Velocity[0] na ball.Velocity[1]
                 newVY = -newVY;
 
                 double newY = (double)ball.Position[1];
@@ -150,8 +147,9 @@ namespace Logic
                 _dataApi.UpdateBall(ball, ball.Position[0], (float)newY, null, newVY);
 
                 Console.WriteLine($"Kula {ball.Color} odbiła się od górnej ściany");
-                return true;
+                isCollision = true; // Zmień return true na isCollision = true
             }
+
 
             return isCollision;
         }
@@ -160,14 +158,15 @@ namespace Logic
         {
            for(int i = 0; i < _amount; i++)
             {
-                IBall ball = _dataApi.CreateBall(_allColors[i], 1, i + 1);
+                IBall ball = _dataApi.CreateBall(_allColors[i], 20, i + 1);
                 _dataApi.AddBallToTable(ball);
             }
         }
 
         public void ClearTable()
         {
-            foreach (var ball in _dataApi.GetAllBallsFromTable())
+            var balls = _dataApi.GetAllBallsFromTable().ToList();
+            foreach (var ball in balls)
             {
                 _dataApi.DeleteBallFromTable(ball);
             }

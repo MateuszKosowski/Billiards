@@ -18,5 +18,7 @@ namespace Logic
         IEnumerable<IBall> GetAllBallsFromTable();
 
         event EventHandler<WallsCollisionEventArgs> WallsCollision;
+
+        event EventHandler<IBall> BallMoving;
     }
 }

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Presentation"
+        xmlns:local="clr-namespace:Presentation.ViewModel"
         mc:Ignorable="d"
 
         Title="Symulacja stołu bilardowego" 
@@ -11,6 +11,10 @@
         Width="1600" 
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen">
+
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
 
     <!-- Główny kontener-->
     <Grid>
@@ -26,9 +30,32 @@
             <Canvas Name="PoolTableCanvas"
                     Background="ForestGreen"
                     Width="1000"           
-                    Height="600" />
+                    Height="600">
 
-            
+                <!-- Kule -->
+                <ItemsControl ItemsSource="{Binding Balls}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Ellipse Width="{Binding Radius}"
+                             Height="{Binding Radius}"
+                             Fill="{Binding Color}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                            <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                </ItemsControl>
+            </Canvas>
+
+
 
         </Border>
 
@@ -43,22 +70,26 @@
             
             <TextBox 
                 Name="BallCountTextBox"
-                Text="5" 
+                Text="{Binding BallCountInput, UpdateSourceTrigger=PropertyChanged}" 
                 Margin="0,0,0,10" 
                 FontSize="20"/>
 
             <Button 
                 Name="StartButton"
                 Content="Start"
+                Command="{Binding StartSimulationCommand}"
                 Margin="0,10,0,5" 
                 FontSize="20"/>
 
             <Button 
                 Name="StopButton"
                 Content="Stop"
+                Command="{Binding StopSimulationCommand}"
                 Margin="0,5,0,0" 
-                FontSize="20"/> 
+                FontSize="20"/>
 
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" 
+                       VerticalAlignment="Center"/>
         </StackPanel>
     </Grid>
     

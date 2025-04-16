@@ -27,7 +27,7 @@ namespace Data.Api
             float vx = (float)_random.NextDouble() * 2 - 1;
             float vy = (float)_random.NextDouble() * 2 - 1;
 
-            Ball ball = new Ball(radius, color, number, x, y, vx, vy);
+            Ball ball = new Ball(radius, color, number, x, y, vx*100, vy*100);
             Console.WriteLine("Utworzono kule " + ball.Color + " o numerze " + ball.Number);
 
             return ball;
@@ -52,9 +52,13 @@ namespace Data.Api
         {
             ball.Position = new Vector2(x, y);
 
-            if (vx != null && vy != null)
+            if (vx != null)
             {
-                ball.Velocity = new Vector2(vx.Value, vy.Value);
+                ball.Velocity = new Vector2(vx.Value, ball.Velocity[1]);
+            } 
+            else if (vy != null)
+            {
+                ball.Velocity = new Vector2(ball.Velocity[0], vy.Value);
             }
         }
 
