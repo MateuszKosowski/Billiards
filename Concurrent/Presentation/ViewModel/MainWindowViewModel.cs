@@ -73,12 +73,15 @@ namespace Presentation.ViewModel
             int A = 1000;
             int B = 600;
 
+            // Ustawienie wymiarów stołu "Logika"
             _poolProcessor = new PoolProcessor();
-            _poolProcessor.CreateTable(A, B); // Ustawienie wymiarów stołu bilardowego
+            _poolProcessor.CreateTable(A, B);
 
+            // Ustawienie wymiarów stołu "Widok"
             _poolTableModel = new PoolTableModel();
             _poolTableModel.PHeight = B;
             _poolTableModel.PWidth = A;
+
             // Gotowa implementacja: Jak guzik będzie kliknięty to wykonaj funkcję
             _startSimulationCommand = new RelayCommand(StartSimulation);
             _stopSimulationCommand = new RelayCommand(StopSimulation);
