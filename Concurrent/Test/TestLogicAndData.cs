@@ -83,7 +83,7 @@ namespace Test
 
             poolProcessor.Start();
 
-            // Maximum wait time for collision detection
+            // Max czas na czekanie
             var maxWaitTime = TimeSpan.FromSeconds(5);
             var startTime = DateTime.Now;
 
@@ -94,7 +94,6 @@ namespace Test
 
             poolProcessor.Stop();
 
-            // Assert that a wall collision was detected
             Assert.IsTrue(wallCollisionDetected);
         }
 
