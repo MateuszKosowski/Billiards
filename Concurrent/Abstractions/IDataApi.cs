@@ -1,7 +1,6 @@
-﻿using Data.Entities;
-using System.Numerics;
+﻿using System.Numerics;
 
-namespace Data.Api
+namespace Abstractions
 {
     public interface IDataApi
     {

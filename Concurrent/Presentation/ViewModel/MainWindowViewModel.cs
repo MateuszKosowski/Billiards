@@ -1,15 +1,10 @@
 ﻿using Logic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using Presentation.Model;
-using Data.Entities;
+using Abstractions;
 
 namespace Presentation.ViewModel
 {

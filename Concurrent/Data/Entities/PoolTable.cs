@@ -1,4 +1,6 @@
-﻿namespace Data.Entities
+﻿using Abstractions;
+
+namespace Data.Entities
 {
     public class PoolTable : IPoolTable
     {

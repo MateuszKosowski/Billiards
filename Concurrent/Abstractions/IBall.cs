@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Data.Entities
+namespace Abstractions
 {
     public interface IBall
     {
@@ -9,7 +9,8 @@ namespace Data.Entities
         int Radius { get; }
         int Number { get; }
         int Weight { get; }
-        Vector2 Position { get; set; }
-        Vector2 Velocity { get; set; }
+        Vector2 Position { get; }
+        Vector2 Velocity { get; }
+        void UpdateState(float? posX = null, float? posY = null, float? velX = null, float? velY = null);
     }
 }

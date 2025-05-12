@@ -1,7 +1,4 @@
-﻿using Data.Entities;
-using static Logic.PoolProcessor;
-
-namespace Logic
+﻿namespace Abstractions
 {
     public interface IPoolProcessor
     {
@@ -16,8 +13,6 @@ namespace Logic
         void CreateTable(float _width, float _height);
 
         IEnumerable<IBall> GetAllBallsFromTable();
-
-        event EventHandler<WallsCollisionEventArgs> WallsCollision;
 
         event EventHandler<IBall> BallMoving;
     }

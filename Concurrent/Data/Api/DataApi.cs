@@ -1,4 +1,5 @@
-﻿using Data.Entities;
+﻿using Abstractions;
+using Data.Entities;
 using System.Numerics;
 
 namespace Data.Api
@@ -50,16 +51,7 @@ namespace Data.Api
 
         public void UpdateBall(IBall ball, float x, float y, float? vx, float? vy)
         {
-            ball.Position = new Vector2(x, y);
-
-            if (vx != null)
-            {
-                ball.Velocity = new Vector2(vx.Value, ball.Velocity[1]);
-            } 
-            else if (vy != null)
-            {
-                ball.Velocity = new Vector2(ball.Velocity[0], vy.Value);
-            }
+            ball.UpdateState(posX: x, posY: y, velX: vx, velY: vy);
         }
 
         public Vector2 GetTableSize()

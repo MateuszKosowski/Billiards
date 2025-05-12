@@ -1,5 +1,6 @@
 ﻿using Data.Entities;
 using Logic;
+using Abstractions;
 
 namespace Test
 {
@@ -75,11 +76,11 @@ namespace Test
 
             // Subskrypcja - czyli event handler na konkretne zdarzenie
             // += oznacza dodanie nowego event handlera, który czeka na ten event
-            poolProcessor.WallsCollision += (sender, args) =>
-            {
-                wallCollisionDetected = true;
-                Console.WriteLine($"Ball {args.Ball.Color} hit wall at {args.CollisionTime}");
-            };
+            //poolProcessor.WallsCollision += (sender, args) =>
+            //{
+            //    wallCollisionDetected = true;
+            //    Console.WriteLine($"Ball {args.Ball.Color} hit wall at {args.CollisionTime}");
+            //};
 
             poolProcessor.Start();
 
