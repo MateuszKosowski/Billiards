@@ -102,8 +102,8 @@ namespace Presentation.ViewModel
 
         private void StartSimulation()
         {
-            // Walidacja wprowadzonej liczby kul (1-7)
-            if (int.TryParse(BallCountInput, out int ballCount) && ballCount >= 1 && ballCount <= 7)
+            // Walidacja wprowadzonej liczby kul (1-12)
+            if (int.TryParse(BallCountInput, out int ballCount) && ballCount >= 1 && ballCount <= 12)
             {
                 // Czyszczenie poprzedniego stanu i komunikatów o błędach
                 ErrorMessage = string.Empty;
@@ -130,7 +130,7 @@ namespace Presentation.ViewModel
                 _poolProcessor.Start();
             } else
             {
-                ErrorMessage = "Liczba kul musi być liczbą całkowitą z zakresu 1-7.";
+                ErrorMessage = "Liczba kul musi być liczbą całkowitą z zakresu 1-12.";
             }
         }
 

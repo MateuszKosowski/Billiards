@@ -5,7 +5,7 @@ namespace Data.Api
 {
     public interface IDataApi
     {
-        IBall CreateBall(string color, int radius, int number);
+        IBall CreateBall(string color, int radius, int number, int weight = 1);
 
         void UpdateBall(IBall ball, float x, float y, float? vx, float? vy);
 

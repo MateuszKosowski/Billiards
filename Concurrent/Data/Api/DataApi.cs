@@ -13,7 +13,7 @@ namespace Data.Api
             _poolTable.AddBall(ball);
         }
 
-        public IBall CreateBall(string color, int radius, int number)
+        public IBall CreateBall(string color, int radius, int number, int weight)
         {
             Console.WriteLine("Staram sie utworzyc kule");
             float xTable = _poolTable.Width;

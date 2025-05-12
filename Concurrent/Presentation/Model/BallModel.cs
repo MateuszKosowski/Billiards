@@ -19,6 +19,7 @@ namespace Presentation.Model
         private int _number;
         private int _diameter;
         private int _radius;
+        private int _weight = 1; // Waga kuli, domyślnie 1
 
         // Właściwość X określa pozycję lewego górnego rogu kuli na Canvas.
         // Aby zgadzało się z naszym założeniem o środku w środku kuli - jest obliczana przez odjęcie promienia od środka kuli,
@@ -77,6 +78,11 @@ namespace Presentation.Model
                 _diameter = value * 2;
                 OnPropertyChanged(nameof(_radius));
             }
+        }
+
+        public int Weight
+        {
+            get { return _weight; }
         }
 
         // Zdarzenie wywoływane, gdy właściwość modelu zostaje zmieniona.

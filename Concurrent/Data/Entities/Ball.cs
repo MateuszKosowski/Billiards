@@ -8,6 +8,7 @@ namespace Data.Entities
         private int _radius { get; init; }
         private string _color { get; init; }
         private int _number { get; init; }
+        private int _weight { get; init; } = 1; // Waga kuli, domyślnie 1
 
         // Pola prywatne z możliwością modyfikacji
         private float _positionX { get; set; }
@@ -19,6 +20,7 @@ namespace Data.Entities
         public int Radius => _radius;
         public string Color => _color;
         public int Number => _number;
+        public int Weight => _weight;
 
         // Publiczne właściwości z getterami i setterami
         public float PositionX
