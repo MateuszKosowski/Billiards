@@ -6,6 +6,9 @@
         private float _height { get; init; }
         private List<Ball> _balls { get; set; }
 
+        // Zamek do synchronizacji dostępu do listy kul
+        private readonly object _listLock = new object();
+
         public PoolTable(float width, float height)
         {
             _width = width;
@@ -25,18 +28,29 @@
 
         public void AddBall(IBall ball)
         {
-            _balls.Add((Ball)ball);
+            lock (_listLock)
+            {
+                _balls.Add((Ball)ball);
+            }
         }
 
         public void DeleteBall(IBall ball)
         {
-            _balls.Remove((Ball)ball);
+            lock (_listLock)
+            {
+                _balls.Remove((Ball)ball);
+            }
         }
 
         // Widok tylko do odczytu, można się iterować
         public IEnumerable<IBall> GetAllBalls()
         {
-            return _balls;
+            lock (_listLock) // <- Zablokuj dostęp do listy
+            {
+                // Zwróć KOPIĘ listy, aby wątek wywołujący
+                // nie trzymał blokady podczas iteracji.
+                return _balls.ToList();
+            } // <- Zwolnij blokadę
         }
     }
 }

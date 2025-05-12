@@ -18,5 +18,7 @@ namespace Data.Api
         Vector2 GetTableSize();
 
         IEnumerable<IBall> GetAllBallsFromTable();
+
+        IPoolTable GetPoolTableInstance();
     }
 }

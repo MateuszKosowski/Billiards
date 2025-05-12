@@ -66,5 +66,10 @@ namespace Data.Api
         {
             return new Vector2(_poolTable.Width, _poolTable.Height);
         }
+
+        public IPoolTable GetPoolTableInstance()
+        {
+            return _poolTable;
+        }
     }
 }

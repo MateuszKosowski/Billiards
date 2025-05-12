@@ -1,6 +1,6 @@
 ﻿namespace Data.Entities
 {
-    interface IPoolTable
+    public interface IPoolTable
     {
         float Width { get; }
         float Height { get; }
