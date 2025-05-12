@@ -13,7 +13,7 @@ namespace Data.Entities
     public class Ball : IBall
     {
         // Blokada do synchronizacji dostępu do pól
-        private readonly object _stateLock = new object(); // <- Zamek dla stanu kuli
+        internal readonly object _stateLock = new object(); // <- Zamek dla stanu kuli
         private System.Threading.Timer _updateTimer; // <- Timer do aktualizacji pozycji kuli
         private Stopwatch _stopwatch = new Stopwatch(); // <- Zegar do pomiaru czasu
         private IPoolTable _tableContext; // <- Kontekst stołu bilardowego
@@ -153,8 +153,7 @@ namespace Data.Entities
             double newY = currentPosition.Y + currentVelocity.Y * timeDelta;
 
             // --- Logika kolizji ze ścianami (przeniesiona z PoolProcessor.IsWallCollision) ---
-            // WAŻNE: Musi modyfikować LOKALNE ZMIENNE newX, newY i currentVelocity
-            // Zamiast _dataApi.UpdateBall, aktualizujemy currentVelocity
+
             bool collisionDetected = false;
             Vector2 tableSize = new Vector2(_tableContext.Width, _tableContext.Height); // Pobierz wymiary
 
@@ -186,7 +185,130 @@ namespace Data.Entities
                 collisionDetected = true;
             }
 
-            // TODO: Później dodać logikę kolizji między kulami
+            // --- Logika kolizja z innymi kulami
+            var otherBalls = _tableContext.GetAllBalls(); // Pobiera bezpieczną kopię listy
+
+            foreach (var otherBallRef in otherBalls)
+            {
+                // Sprawdź, czy to nie ta sama kula
+                if (otherBallRef.Number == this.Number) continue;
+
+                // Bezpiecznie pobierz pozycję drugiej kuli
+                Vector2 otherPosition = otherBallRef.Position; // Używa lock wewnątrz gettera Position
+
+                // Oblicz dystans
+                double dx = newX - otherPosition.X;
+                double dy = newY - otherPosition.Y;
+                double distanceSquared = dx * dx + dy * dy; // Lepiej porównywać kwadraty
+                double radiiSum = this.Radius + otherBallRef.Radius;
+                double radiiSumSquared = radiiSum * radiiSum;
+
+                // Jeśli dystans jest mniejszy niż suma promieni
+                if (distanceSquared < radiiSumSquared)
+                {
+
+                    // --- Implementacja ResolveCollision z blokowaniem ---
+                    IBall ball1 = this;
+                    IBall ball2 = otherBallRef;
+
+                    // Lolejność blokowania, aby uniknąć zakleszczenia (deadlock)
+                    // Zawsze blokujemy najpierw kulę z mniejszym numerem.
+                    object lock1 = ball1.Number < ball2.Number ? ((Ball)ball1)._stateLock : ((Ball)ball2)._stateLock;
+                    object lock2 = ball1.Number < ball2.Number ? ((Ball)ball2)._stateLock : ((Ball)ball1)._stateLock;
+
+                    double currentDistance = 0;
+                    double nx = 0;
+                    double ny = 0;
+
+                    lock (lock1)
+                    {
+                        lock (lock2)
+                        {
+                            // ---- Sekcja Krytyczna: Mamy blokadę na OBU kulach ----
+                            // Teraz możemy bezpiecznie odczytać i zmodyfikować stan obu kul.
+
+                          
+                            Vector2 v1 = ball1.Velocity; // Używa gettera, który ma lock
+                            Vector2 v2 = ball2.Velocity;
+                            Vector2 pos1 = ball1.Position; 
+                            Vector2 pos2 = ball2.Position;
+
+                            // Wektor normalny kolizji (od środka ball1 do środka ball2)
+                           
+                            dx = pos2.X - pos1.X;
+                            dy = pos2.Y - pos1.Y;
+                            currentDistance = Math.Sqrt(dx * dx + dy * dy);
+                      
+                            if (currentDistance == 0) continue;
+
+                            nx = dx / currentDistance;
+                            ny = dy / currentDistance;
+
+                            // Masa kul
+                            double m1 = ball1.Weight;
+                            double m2 = ball2.Weight;
+
+                            // Składowe normalne prędkości
+                            double v1n = v1.X * nx + v1.Y * ny;
+                            double v2n = v2.X * nx + v2.Y * ny;
+
+                            // Składowe styczne prędkości
+                            double v1t = -v1.X * ny + v1.Y * nx;
+                            double v2t = -v2.X * ny + v2.Y * nx;
+
+                            // Nowe składowe normalne po zderzeniu sprężystym
+                            double v1nAfter = (v1n * (m1 - m2) + 2 * m2 * v2n) / (m1 + m2);
+                            double v2nAfter = (v2n * (m2 - m1) + 2 * m1 * v1n) / (m1 + m2);
+
+                            // Nowe prędkości w układzie x, y
+                            float v1xAfter = (float)(v1nAfter * nx - v1t * ny);
+                            float v1yAfter = (float)(v1nAfter * ny + v1t * nx);
+                            float v2xAfter = (float)(v2nAfter * nx - v2t * ny);
+                            float v2yAfter = (float)(v2nAfter * ny + v2t * nx);
+
+                            // Ustaw nowe prędkości (używa settera, który ma lock)
+                            ball1.Velocity = new Vector2(v1xAfter, v1yAfter);
+                            ball2.Velocity = new Vector2(v2xAfter, v2yAfter);
+
+                            // ---- Koniec Sekcji Krytycznej ----
+
+                        } // Zwolnienie blokady lock2
+                    } // Zwolnienie blokady lock1
+
+
+                    // --- Rozdzielenie kul (zapobieganie zakleszczeniu) ---
+
+                    double overlap = (ball1.Radius + ball2.Radius) - currentDistance;
+                    if (overlap > 0.01) // Mały margines błędu
+                    {
+                        // Proste rozdzielenie wzdłuż linii kolizji
+                        double moveFactor = overlap / 2.0; // Rozdziel równo
+                        Vector2 moveVector = new Vector2((float)(nx * moveFactor), (float)(ny * moveFactor));
+
+                        // Aktualizacja pozycji wymaga osobnych blokad, co jest OK, bo robimy to sekwencyjnie
+                        ball1.Position -= moveVector;
+                        ball2.Position += moveVector;
+
+                        // Po rozdzieleniu, nowa pozycja tej kuli (this/ball1) mogła się zmienić,
+                        // więc zaktualizujmy newX, newY używane dalej w UpdateSelf
+                        Vector2 correctedPos1 = ball1.Position;
+                        newX = correctedPos1.X;
+                        newY = correctedPos1.Y;
+                    }
+
+
+                    // Ważne: Ponieważ zmieniliśmy prędkość 'this' (ball1), musimy
+                    // zaktualizować lokalną zmienną 'currentVelocity' używaną do
+                    // dalszych obliczeń pozycji w tym kroku UpdateSelf.
+                    lock (_stateLock) // Odczytaj nową prędkość bezpiecznie
+                    {
+                        currentVelocity = new Vector2(_velocityX, _velocityY);
+                    }
+
+                    break;
+
+                }
+            }
 
             // --- Aktualizacja stanu kuli (bezpieczna wątkowo) ---
             lock (_stateLock)
@@ -201,8 +323,6 @@ namespace Data.Entities
             // Przekazujemy aktualną pozycję po wszystkich obliczeniach
             BallMoved?.Invoke(this, new BallMovedEventArgs(new Vector2((float)newX, (float)newY)));
 
-            // Można też dodać event dla kolizji ze ścianą, jeśli potrzebny
-            // if (collisionDetected) { WallsCollision?.Invoke(...) }
         }
 
     }
