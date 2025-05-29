@@ -33,6 +33,12 @@ namespace Logic
                 Directory.CreateDirectory(directory);
             }
 
+            // Wyczyść plik logu na początku nowej sesji
+            if (File.Exists(_logFilePath))
+            {
+                File.WriteAllText(_logFilePath, string.Empty);
+            }
+
             // Timer do automatycznego zrzucania bufora
             _flushTimer = new Timer(FlushBufferToFile, null, FlushIntervalMs, FlushIntervalMs);
         }
@@ -81,7 +87,7 @@ namespace Logic
         public void LogBallPosition(IBall ball)
         {
             _positionLogCounter++;
-            // Loguj pozycję co 60 tików (około 1 sekunda przy 60 FPS)
+            // Loguj pozycję co 60 tików 
             if (_positionLogCounter % 60 == 0)
             {
                 var speed = Math.Sqrt(ball.Velocity.X * ball.Velocity.X + ball.Velocity.Y * ball.Velocity.Y);
@@ -112,6 +118,8 @@ namespace Logic
 
             var logEntry = $"WALL_HIT | Ball {ball.Number} ({ball.Color}) hit wall | " +
                           $"Position: ({ball.Position.X:F2}, {ball.Position.Y:F2}) | " +
+                          // Nazwa ściany U, D, L, R w zależności od kierunku
+                           $"Wall name: {(ball.Velocity.X > 0 ? "R" : ball.Velocity.X < 0 ? "L" : ball.Velocity.Y > 0 ? "D" : "U")} | " +
                           $"Speed: {speed:F2} | CollisionTime: {collisionTime:HH:mm:ss.fff}";
 
             AddToBuffer(logEntry);

@@ -36,7 +36,7 @@ namespace Logic
         public PoolProcessor()
         {
             _dataApi = new DataApi();
-            _logger = new BufferedBilliardLogger($"logs/billiards-{DateTime.Now:yyyy-MM-dd}.txt");
+            _logger = new BufferedBilliardLogger($"logs/billiards-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt");
         }
 
         ~PoolProcessor()
@@ -142,7 +142,7 @@ namespace Logic
         {
             if (!_isRunning) return;
 
-            _logger.LogBallPosition(moving);
+            //_logger.LogBallPosition(moving);
 
             // Najpierw bezpiecznie zaktualizuj stan kuli (pozycja i prędkość)
             moving.UpdateState(moving.Position.X, moving.Position.Y, moving.Velocity.X, moving.Velocity.Y);
