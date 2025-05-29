@@ -10,13 +10,14 @@ namespace Data.Entities
         private readonly ICollisionService _collisionService;
         private readonly Timer _timer;
         private Stopwatch stopwatch = new Stopwatch();
+        private static readonly Random _random = new Random();
 
         private const int IntervalMs = 16;
 
         private int _radius { get; init; }
         private string _color { get; init; }
         private int _number { get; init; }
-        private int _weight { get; init; } = 1;
+        private int _weight { get; init; } = _random.Next(1,4);
 
         private float _positionX { get; set; }
         private float _positionY { get; set; }
@@ -84,7 +85,7 @@ namespace Data.Entities
         // Konstruktor do testów (bez collisionService)
         public Ball(int radius, string color, int number, float positionX, float positionY, float velocityX, float velocityY)
         {
-            _radius = radius;
+            _radius = radius * _weight / 2;
             _color = color;
             _number = number;
             _positionX = positionX;
@@ -96,7 +97,7 @@ namespace Data.Entities
         // Konstruktor do symulacji (z collisionService)
         public Ball(int radius, string color, int number, float positionX, float positionY, float velocityX, float velocityY, ICollisionService collisionService)
         {
-            _radius = radius;
+            _radius = radius * _weight / 2;
             _color = color;
             _number = number;
             _positionX = positionX;

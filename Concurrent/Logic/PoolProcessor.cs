@@ -13,6 +13,7 @@ namespace Logic
         private readonly object _lock = new();
         private readonly List<Ball> _balls = new();
         private bool _isRunning = false;
+        private readonly BufferedBilliardLogger _logger;
 
         public event EventHandler<BallsCollisionEventArgs> BallsCollision;
         public event EventHandler<WallsCollisionEventArgs> WallsCollision;
@@ -35,6 +36,12 @@ namespace Logic
         public PoolProcessor()
         {
             _dataApi = new DataApi();
+            _logger = new BufferedBilliardLogger($"logs/billiards-{DateTime.Now:yyyy-MM-dd}.txt");
+        }
+
+        ~PoolProcessor()
+        {
+            _logger?.Dispose();
         }
 
         public void AddBalls(int amount)
@@ -81,6 +88,7 @@ namespace Logic
             lock (_lock)
             {
                 _isRunning = true;
+                _logger.LogSimulationStart(_balls.Count);
                 foreach (var ball in _balls)
                 {
                     ball.Start();
@@ -93,6 +101,7 @@ namespace Logic
             lock (_lock)
             {
                 _isRunning = false;
+                _logger.LogSimulationStop();
                 foreach (var ball in _balls)
                 {
                     ball.Stop();
@@ -117,9 +126,23 @@ namespace Logic
             }
         }
 
+        // Dodatkowa metoda do sprawdzenia statusu bufora
+        public int GetLogBufferSize()
+        {
+            return _logger.BufferSize;
+        }
+
+        // Metoda do wymuszenia zapisu bufora (przydatne do debugowania)
+        public void FlushLogs()
+        {
+            _logger.ForceFlush();
+        }
+
         public void ReportPosition(IBall moving)
         {
             if (!_isRunning) return;
+
+            _logger.LogBallPosition(moving);
 
             // Najpierw bezpiecznie zaktualizuj stan kuli (pozycja i prędkość)
             moving.UpdateState(moving.Position.X, moving.Position.Y, moving.Velocity.X, moving.Velocity.Y);
@@ -141,6 +164,10 @@ namespace Logic
         {
             if (IsWallCollision(ball))
             {
+
+                var collisionTime = DateTime.Now;
+                _logger.LogWallCollision(ball, collisionTime);
+
                 WallsCollision?.Invoke(this, new WallsCollisionEventArgs
                 {
                     Ball = ball,
@@ -213,6 +240,10 @@ namespace Logic
 
                 if (distance < (ball.Radius + otherBall.Radius))
                 {
+
+                    var collisionTime = DateTime.Now;
+                    _logger.LogBallCollision(ball, otherBall, collisionTime);
+
                     BallsCollision?.Invoke(this, new BallsCollisionEventArgs
                     {
                         Ball1 = ball,
